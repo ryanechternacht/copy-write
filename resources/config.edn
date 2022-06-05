@@ -1,0 +1,12 @@
+{:cookie-attrs {}
+;;  :auth0 {:base-url "dev-zimmr.us.auth0.com/"
+;;          :client-id "26th5lB0f97TdLXdCFPSYV0kqI9FXh5z"
+;;          :client-secret "65JhapG9xp4cfStFSj6jKZggvOFg_VdyIRKLClQ8BeG8u_fLaRY5vbcCfQA73vVj"
+;;          :redirect-url-base "http://localhost:3001/v0.1/auth0/callback"}
+ :front-end {:base-url "http://localhost:4000"}
+ :pg-db {:dbtype "postgresql"
+         :dbname "yardstick"
+         :host "127.0.0.1"
+         :user "ryan"
+         :password nil
+         :ssl false}}
