@@ -1,10 +1,10 @@
 (ns dbcopy-api.egest
-  (:require [yardstick-api.db :as db]
+  (:require [dbcopy-api.db :as db]
             [honey.sql.helpers :as h]
-            [work.helpers :as wh]
+            [dbcopy-api.utils :as u]
             [com.rpl.specter :as s]
             [clojure.set :as set]
-            [work.ingest :as ing]))
+            [dbcopy-api.ingest :as ing]))
 
 ;; I should be able to pull the :id from cols or something
 (defn- drop-keys [rec]
@@ -33,7 +33,7 @@
 (defn- build-insert [deps data t new-ids]
  (let [rows (map #(prep-data deps % t new-ids) (data t))]
    (when (seq rows)
-     (-> (h/insert-into (wh/make-table-kw t))
+     (-> (h/insert-into (u/make-table-kw t))
          (h/values rows)
          (h/returning :*)))))
 
@@ -61,7 +61,7 @@
                      (assoc spat-data t new-rows)))))))))
 
 (comment
-  (insert-rows wh/yardstick-db
+  (insert-rows u/yardstick-db
                ing/deps
                ing/dag
                ing/primary-keys

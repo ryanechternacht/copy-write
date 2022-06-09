@@ -1,4 +1,4 @@
-(ns work.helpers)
+(ns dbcopy-api.utils)
 
 (defn vec-kw [& xs]
   (vec (map keyword xs)))

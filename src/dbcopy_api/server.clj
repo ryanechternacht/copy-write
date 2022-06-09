@@ -29,7 +29,7 @@
 
 (defn -main
   [& _]
-  (run-jetty #'handler {:port 3004
+  (run-jetty #'handler {:port 3010
                         :join? false}))
 
 (comment

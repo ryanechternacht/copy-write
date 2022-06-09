@@ -1,7 +1,7 @@
 (ns dbcopy-api.dependencies
-  (:require [yardstick-api.db :as db]
+  (:require [dbcopy-api.db :as db]
             [honey.sql.helpers :as h]
-            [work.helpers :as wh]))
+            [dbcopy-api.utils :as u]))
 
 (def cols
   [;; {:from_schema "public",
@@ -223,16 +223,16 @@
 (defn build-deps [cols]
   (reduce (fn [acc {:keys [from_schema from_table from_column to_schema to_table to_column]}]
             (update acc
-                    (wh/vec-kw from_schema from_table)
+                    (u/vec-kw from_schema from_table)
                     assoc
                     (keyword from_column)
-                    (wh/vec-kw to_schema to_table to_column)))
+                    (u/vec-kw to_schema to_table to_column)))
           {}
           cols))
 
 (comment
-  (get-all-cols wh/yardstick-db)
-  (get-referenced-cols wh/yardstick-db)
+  (get-all-cols u/yardstick-db)
+  (get-referenced-cols u/yardstick-db)
   (build-deps cols)
   ;
   )

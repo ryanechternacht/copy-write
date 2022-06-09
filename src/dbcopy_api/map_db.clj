@@ -1,4 +1,4 @@
-(ns work.map-db
+(ns dbcopy-api.map-db
   (:require [com.rpl.specter :as s]))
 
 ;; all this needs to do is map k to the set of value's value's 
@@ -50,7 +50,7 @@
   (reduce (fn [acc [_ m]]
             (reduce (fn [acc2 [_ col]]
                       (let [t (vec (take 2 col))
-        .                    c (nth col 2)]
+                            c (nth col 2)]
                         (assoc acc2 t (conj (get acc2 t #{}) c))))
                     acc
                     m))
@@ -77,6 +77,7 @@
            [:public :parent] {:parent_id [:public :parent :id]
                               :school_id [:public :school :id]}})
 
+;; what is this?
 (map (fn [x]
        {:table x
         :type :normal})
