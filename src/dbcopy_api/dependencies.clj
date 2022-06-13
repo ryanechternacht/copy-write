@@ -1,7 +1,8 @@
 (ns dbcopy-api.dependencies
   (:require [dbcopy-api.db :as db]
             [honey.sql.helpers :as h]
-            [dbcopy-api.utils :as u]))
+            [dbcopy-api.utils :as u]
+            [com.rpl.specter :as s]))
 
 (def cols
   [;; {:from_schema "public",
@@ -220,6 +221,31 @@
               {:table (str table_schema "." table_name)
                :column column_name}))))
 
+(defn get-primary-key-cols [db table-col]
+  (let [[s t] (clojure.string/split table-col #"\.")]
+    (->> (-> (h/select :key_column_usage.column_name)
+             (h/from :information_schema.table_constraints)
+             (h/join :information_schema.key_column_usage
+                     [:and
+                      [:=
+                       :table_constraints.table_catalog
+                       :key_column_usage.table_catalog]
+                      [:=
+                       :table_constraints.table_schema
+                       :key_column_usage.table_schema]
+                      [:=
+                       :table_constraints.table_name
+                       :key_column_usage.table_name]
+                      [:=
+                       :table_constraints.constraint_name
+                       :key_column_usage.constraint_name]])
+             (h/where [:and
+                       [:= :table_constraints.constraint_type "PRIMARY KEY"]
+                       [:= :table_constraints.table_schema s]
+                       [:= :table_constraints.table_name t]])
+             (db/->execute db))
+         (map :column_name))))
+
 (defn build-deps [cols]
   (reduce (fn [acc {:keys [from_schema from_table from_column to_schema to_table to_column]}]
             (update acc
@@ -230,9 +256,31 @@
           {}
           cols))
 
+(defn deps->json [deps]
+  (into [] (map (fn [[k v]]
+                  [(u/make-table-kw k)
+                   (into {} (map (fn [[k2 v2]]
+                                   [k2 [(u/make-table-kw (take 2 v2)) (nth v2 2)]]) v))])
+                deps)))
+
+(defn json-table->kw [t]
+  (vec (map keyword (clojure.string/split (name t) #"\."))))
+
+(defn json->deps [json]
+  (->> json
+       (s/transform
+        [s/MAP-VALS s/MAP-VALS]
+        (fn [[t c]]
+          (conj (json-table->kw t) (keyword c))))
+       (s/transform
+        [s/MAP-KEYS]
+        json-table->kw)))
+
 (comment
   (get-all-cols u/yardstick-db)
   (get-referenced-cols u/yardstick-db)
+  (get-primary-key-cols u/yardstick-db "public.student")
   (build-deps cols)
+  (deps->json {[:public :school_assessment_instance] {:school_id [:public :school :id]}})
   ;
   )

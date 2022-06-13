@@ -18,6 +18,7 @@
                              :user "ryan"
                              :password nil
                              :ssl false})
+                  :root-table-row (atom {:table ["public" "school" "id"] :ids [1]})
                   :deps (atom {[:public :school_assessment_instance] {:school_id [:public :school :id]},
                                [:public :student] {:school_id [:public :school :id]},
                                [:public :student_assessment]
@@ -33,6 +34,7 @@
   )
 
 (def in-mem-db {:db (atom nil)
+                :root-table-row (atom nil)
                 :deps (atom nil)
                 :slurped-data (atom nil)
                 :spat-rows (atom nil)})

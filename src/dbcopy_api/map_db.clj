@@ -35,17 +35,6 @@
           (recur others (conj (apply conj resolved (filter #(not (resolved-set %)) deps)) t))
           (recur (conj (vec others) [t deps]) resolved))))))
 
-(defn make-dag-2 [deps starting-table]
-  (loop [[[t deps] & others] (make-deps-slim deps)
-         resolved [starting-table]]
-    (if (nil? t)
-      resolved
-      (let [resolved-set (set resolved)
-            has-deps-set (set (map first others))]
-        (if (every? #(or (resolved-set %) (not (has-deps-set %))) deps)
-          (recur others (conj (apply conj resolved (filter #(not (resolved-set %)) deps)) t))
-          (recur (conj (vec others) [t deps]) resolved))))))
-
 (defn make-primary-keys [deps]
   (reduce (fn [acc [_ m]]
             (reduce (fn [acc2 [_ col]]
