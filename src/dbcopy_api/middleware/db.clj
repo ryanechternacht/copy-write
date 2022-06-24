@@ -35,6 +35,7 @@
 
 (def in-mem-db {:db (atom nil)
                 :root-table-row (atom nil)
+                :user-settable-cols (atom nil)
                 :deps (atom nil)
                 :slurped-data (atom nil)
                 :spat-rows (atom nil)})

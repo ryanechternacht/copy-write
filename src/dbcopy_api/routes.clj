@@ -32,9 +32,14 @@
   (GET "/primary-key-cols" [table-col :as {{db :db} :in-mem-db}]
     (response (deps/get-primary-key-cols @db table-col))))
 
+(def GET-table-cols
+  (GET "/table-cols" [table :as {{db :db} :in-mem-db}]
+    (response (deps/get-table-columns @db table))))
+
 (def POST-root-table-row
-  (POST "/root-table-row" [:as {{root-table-row :root-table-row} :in-mem-db body :body}]
-    (reset! root-table-row body)
+  (POST "/root-table-row" [:as {{:keys [root-table-row :user-settable-cols]} :in-mem-db {rtr :rootTableRow usc :userSettableColumns} :body}]
+    (reset! root-table-row rtr)
+    (reset! user-settable-cols usc)
     (response {:root-table-row @root-table-row})))
 
 (def GET-raw-deps
@@ -100,6 +105,7 @@
   #'GET-cols
   #'GET-referenced-cols
   #'GET-primary-key-cols
+  #'GET-table-cols
   #'POST-root-table-row
   #'GET-raw-deps
   #'POST-deps

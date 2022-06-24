@@ -202,14 +202,15 @@
                 [:kcu2.column_name :to_column])
       (h/from [:information_schema.referential_constraints :rc])
       (h/join [:information_schema.key_column_usage :kcu1]
-              [:and [:= :rc.constraint_catalog :kcu1.constraint_catalog]
+              [:and
+               [:= :rc.constraint_catalog :kcu1.constraint_catalog]
                [:= :rc.constraint_schema :kcu1.constraint_schema]
                [:= :rc.constraint_name :kcu1.constraint_name]])
       (h/join [:information_schema.key_column_usage :kcu2]
-              [:and [:= :rc.unique_constraint_catalog :kcu2.constraint_catalog]
+              [:and
+               [:= :rc.unique_constraint_catalog :kcu2.constraint_catalog]
                [:= :rc.unique_constraint_schema :kcu2.constraint_schema]
                [:= :rc.unique_constraint_name :kcu2.constraint_name]])
-   ;; (db/fmt-sql)
       (db/->execute db)))
 
 (defn get-all-cols [db]
@@ -246,6 +247,58 @@
              (db/->execute db))
          (map :column_name))))
 
+(defn get-table-columns [db table]
+  (let [[s t] (clojure.string/split table #"\.")]
+    (-> (h/select :columns.column_name
+                  [[:case
+                    [:and
+                     [:= :table_constraints.constraint_type "PRIMARY KEY"]
+                     [:is :referential_constraints.constraint_name nil]]
+                    "PRIMARY KEY"
+                    [:and
+                     [:= :table_constraints.constraint_type "PRIMARY KEY"]
+                     [:is-not :referential_constraints.constraint_name nil]]
+                    "FOREIGN KEY"]
+                   :key_type])
+        (h/from :information_schema.columns)
+        (h/left-join :information_schema.key_column_usage
+                     [:and
+                      [:=
+                       :columns.table_catalog
+                       :key_column_usage.table_catalog]
+                      [:=
+                       :columns.table_schema
+                       :key_column_usage.table_schema]
+                      [:=
+                       :columns.table_name
+                       :key_column_usage.table_name]
+                      [:=
+                       :columns.column_name
+                       :key_column_usage.column_name]])
+        (h/left-join :information_schema.table_constraints
+                     [:and
+                      [:=
+                       :key_column_usage.table_catalog
+                       :table_constraints.table_catalog]
+                      [:=
+                       :key_column_usage.table_schema
+                       :table_constraints.table_schema]
+                      [:=
+                       :key_column_usage.table_name
+                       :table_constraints.table_name]
+                      [:=
+                       :table_constraints.constraint_type
+                       "PRIMARY KEY"]])
+        (h/left-join :information_schema.referential_constraints
+                     [:and
+                      [:= :referential_constraints.constraint_catalog :key_column_usage.constraint_catalog]
+                      [:= :referential_constraints.constraint_schema :key_column_usage.constraint_schema]
+                      [:= :referential_constraints.constraint_name :key_column_usage.constraint_name]])
+        (h/where [:and
+                  [:= :columns.table_schema s]
+                  [:= :columns.table_name t]])
+        (db/->execute db))))
+
 (defn build-deps [cols]
   (reduce (fn [acc {:keys [from_schema from_table from_column to_schema to_table to_column]}]
             (update acc
@@ -280,6 +333,7 @@
   (get-all-cols u/yardstick-db)
   (get-referenced-cols u/yardstick-db)
   (get-primary-key-cols u/yardstick-db "public.student")
+  (get-table-columns u/yardstick-db "public.grade")
   (build-deps cols)
   (deps->json {[:public :school_assessment_instance] {:school_id [:public :school :id]}})
   ;
