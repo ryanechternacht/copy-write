@@ -94,7 +94,7 @@
                                         @slurped-data
                                         {table seed-values}
                                         new-ids))
-      (response {:spat-data @spat-rows}))))
+      (response (map (fn [[k v]] [(u/make-table-kw k) (count v)]) @spat-rows)))))
 
 (def GET-404
   (GET "*" []
