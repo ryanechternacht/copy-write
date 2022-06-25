@@ -37,7 +37,7 @@
     (response (deps/get-table-columns @db table))))
 
 (def POST-root-table-row
-  (POST "/root-table-row" [:as {{:keys [root-table-row :user-settable-cols]} :in-mem-db {rtr :rootTableRow usc :userSettableColumns} :body}]
+  (POST "/root-table-row" [:as {{:keys [root-table-row user-settable-cols]} :in-mem-db {rtr :rootTableRow usc :userSettableColumns} :body}]
     (reset! root-table-row rtr)
     (reset! user-settable-cols usc)
     (response {:root-table-row @root-table-row})))
@@ -64,7 +64,7 @@
       (response {:rows (reduce + (map count (vals (:data @slurped-data))))}))))
 
 (def POST-ingest-test
-  (POST "/ingest-test" [:as {{:keys [db root-table-row deps slurped-data]} :in-mem-db}]
+  (POST "/ingest-test" [:as {{:keys [db root-table-row deps]} :in-mem-db}]
     (let [{:keys [table ids]} @root-table-row
           table (u/vec-kw table)
           table-short (u/vec-kw (take 2 table))
@@ -76,18 +76,24 @@
                                          false)]
       (response (into {} (map (fn [[k v]] [(u/make-table-kw k) v]) result))))))
 
+(def GET-user-settable-cols
+  (GET "/user-settable-cols" [:as {{user-settable-cols :user-settable-cols} :in-mem-db}]
+    (response @user-settable-cols)))
+
+;; TODO think about these data structures
 (def POST-egest
-  (POST "/egest" [:as {{:keys [db deps slurped-data spat-rows]} :in-mem-db body :body}]
-    (let [{:keys [table seed-values]} {["public" "school"]
-                                       [{:id 2
-                                         :name "Ridge View Elementary"}]}
-          table (u/vec-kw table)]
+  (POST "/egest" [:as {{:keys [db deps slurped-data spat-rows root-table-row]} :in-mem-db body :body}]
+    (let [{:keys [table ids]} @root-table-row
+          table-kw (apply u/vec-kw (take 2 table))
+          seed-values {table-kw (map (fn [{:keys [column value]}] {column value :id (first ids)}) body)}
+          new-ids {(apply u/vec-kw table) {(first ids) 2}}]
       (reset! spat-rows (eg/insert-rows @db
                                         @deps
-                                        (mdb/make-dag @deps table)
+                                        (mdb/make-dag @deps table-kw)
                                         (mdb/make-primary-keys @deps)
                                         @slurped-data
-                                        {table seed-values}))
+                                        {table seed-values}
+                                        new-ids))
       (response {:spat-data @spat-rows}))))
 
 (def GET-404
@@ -111,6 +117,7 @@
   #'POST-deps
   #'POST-ingest
   #'POST-ingest-test
+  #'GET-user-settable-cols
   #'POST-egest
   #'GET-404
   #'POST-404)
