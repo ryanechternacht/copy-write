@@ -52,11 +52,6 @@
     {:seed-values {[s t] new-row}
      :new-ids {[s t c] {original-id (first (map c new-row))}}}))
 
-(insert-root-row u/yardstick-db
-                 ["public" "school" "id"]
-                 [{:column "name", :value "asdf"}]
-                 1)
-
 (defn insert-rows [db deps dag primary-keys {:keys [ids data]} seed-data new-ids]
   (loop [[t & others] (rest dag)
          new-ids new-ids

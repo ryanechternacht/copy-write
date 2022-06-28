@@ -77,8 +77,9 @@
       (response (into {} (map (fn [[k v]] [(u/make-table-kw k) v]) result))))))
 
 (def GET-user-settable-cols
-  (GET "/user-settable-cols" [:as {{user-settable-cols :user-settable-cols} :in-mem-db}]
-    (response @user-settable-cols)))
+  (GET "/user-settable-cols" [:as {{:keys [user-settable-cols root-table-row]} :in-mem-db}]
+    (response {:cols @user-settable-cols
+               :root-table (u/make-table-kw (:table @root-table-row))})))
 
 ;; TODO think about these data structures
 (def POST-egest

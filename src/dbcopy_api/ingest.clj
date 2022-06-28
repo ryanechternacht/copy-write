@@ -60,9 +60,6 @@
   ([db deps dag primary-keys seed-ids]
    (slurp-data db deps dag primary-keys seed-ids true))
   ([db deps dag primary-keys seed-ids save-rows?]
-   (println deps)
-   (println dag)
-   (println primary-keys)
    (reduce (fn [{:keys [ids data]} t]
              (let [where-clauses (make-where-clause deps t ids)
                    rows (slurp-rows db t where-clauses)
