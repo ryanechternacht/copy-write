@@ -37,6 +37,26 @@
           (h/values rows)
           (h/returning :*)))))
 
+(defn insert-root-row [db table-col cols original-id]
+  (let [row (reduce (fn [acc {:keys [column value]}]
+                      (assoc acc (keyword column) value))
+                    {}
+                    cols)
+        ;; insert-cols (map :column cols)
+        [s t c] (map keyword table-col)
+        ;;  TODO accept more than one id here
+        new-row (-> (h/insert-into (u/make-table-kw [s t]))
+                    (h/values [row])
+                    (h/returning :*)
+                    (db/->execute db))]
+    {:seed-values {[s t] new-row}
+     :new-ids {[s t c] {original-id (first (map c new-row))}}}))
+
+(insert-root-row u/yardstick-db
+                 ["public" "school" "id"]
+                 [{:column "name", :value "asdf"}]
+                 1)
+
 (defn insert-rows [db deps dag primary-keys {:keys [ids data]} seed-data new-ids]
   (loop [[t & others] (rest dag)
          new-ids new-ids

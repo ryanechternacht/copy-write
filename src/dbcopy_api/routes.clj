@@ -85,16 +85,22 @@
   (POST "/egest" [:as {{:keys [db deps slurped-data spat-rows root-table-row]} :in-mem-db body :body}]
     (let [{:keys [table ids]} @root-table-row
           table-kw (apply u/vec-kw (take 2 table))
-          seed-values {table-kw (map (fn [{:keys [column value]}] {column value :id (first ids)}) body)}
-          new-ids {(apply u/vec-kw table) {(first ids) 2}}]
+          ;; seed-values {table-kw (map (fn [{:keys [column value]}] {column value :id (first ids)}) body)}
+          ;; new-ids {(apply u/vec-kw table) {(first ids) 2}}]
+          {:keys [seed-values new-ids]} (eg/insert-root-row @db
+                                                            table
+                                                            body
+                                                            (first ids))]
       (reset! spat-rows (eg/insert-rows @db
                                         @deps
                                         (mdb/make-dag @deps table-kw)
                                         (mdb/make-primary-keys @deps)
                                         @slurped-data
-                                        {table seed-values}
+                                        {table-kw seed-values}
                                         new-ids))
-      (response (map (fn [[k v]] [(u/make-table-kw k) (count v)]) @spat-rows)))))
+      (response {:root-id (first new-ids) ;; TODO this is the wrong shape
+                 :root-table table
+                 :rows (into {} (map (fn [[k v]] [(u/make-table-kw k) (count v)]) @spat-rows))}))))
 
 (def GET-404
   (GET "*" []
