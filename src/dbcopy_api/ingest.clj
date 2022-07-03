@@ -41,21 +41,6 @@
               new-todos-ids (into (drop batch-size todo-ids) net-new-ids)]
           (recur (into processed-ids ids-now) new-todos-ids new-data))))))
 
-(defn slurp-data [db deps dag primary-keys seed-ids]
-  (reduce (fn [{:keys [ids data]} t]
-            (let [where-clauses (make-where-clause deps t ids)
-                  rows (slurp-rows db t where-clauses)
-                  new-ids (reduce (fn [acc2 pk]
-                                    (assoc acc2 (conj t pk) (map pk rows)))
-                                  ids
-                                  (primary-keys t))
-                  new-data (assoc data t rows)]
-              {:data new-data
-               :ids new-ids}))
-          {:data {}
-           :ids seed-ids}
-          (rest dag)))
-
 (defn slurp-data
   ([db deps dag primary-keys seed-ids]
    (slurp-data db deps dag primary-keys seed-ids true))

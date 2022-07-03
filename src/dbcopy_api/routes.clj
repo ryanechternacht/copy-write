@@ -66,8 +66,8 @@
 (def POST-ingest-test
   (POST "/ingest-test" [:as {{:keys [db root-table-row deps]} :in-mem-db}]
     (let [{:keys [table ids]} @root-table-row
-          table (u/vec-kw table)
-          table-short (u/vec-kw (take 2 table))
+          table (apply u/vec-kw table)
+          table-short (apply u/vec-kw (take 2 table))
           {result :data} (ing/slurp-data @db
                                          @deps
                                          (mdb/make-dag @deps table-short)
