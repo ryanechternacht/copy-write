@@ -100,7 +100,7 @@
                                         {table-kw seed-values}
                                         new-ids))
       (response {:root-id (first new-ids) ;; TODO this is the wrong shape
-                 :root-table table
+                 :root-table (u/make-table-kw table)
                  :rows (into {} (map (fn [[k v]] [(u/make-table-kw k) (count v)]) @spat-rows))}))))
 
 (def GET-404
