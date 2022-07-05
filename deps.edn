@@ -1,5 +1,7 @@
 {:paths ["src" "resources"]
  :deps {cheshire/cheshire {:mvn/version "5.10.0"}
+        clj-commons/clj-yaml {:mvn/version "0.7.108"}
+        cli-matic/cli-matic {:mvn/version "0.5.4"}
         clj-http/clj-http {:mvn/version "3.12.2"}
         clojure.java-time/clojure.java-time {:mvn/version "0.3.3"}
         com.cemerick/url {:mvn/version "0.1.1"}
@@ -18,8 +20,8 @@
         ring-cors/ring-cors {:mvn/version "0.1.13"}
         seancorfield/next.jdbc {:mvn/version "1.1.646"}}
  :aliases
- {:run-m {:main-opts ["-m" "dbcopy.dbcopy-api"]}
-  :run-x {:ns-default dbcopy.dbcopy-api
+ {:run-m {:main-opts ["-m" "dbcopy-api"]}
+  :run-x {:ns-default dbcopy-api
           :exec-fn greet
           :exec-args {:name "Clojure"}}
   :test {:extra-paths ["test"]

@@ -222,6 +222,14 @@
               {:table (str table_schema "." table_name)
                :column column_name}))))
 
+(defn get-all-tables [db]
+  (->> (-> (h/select :table_schema :table_name)
+           (h/from :information_schema.tables)
+           (h/where :not-in :table_schema '("pg_catalog" "information_schema"))
+           (db/->execute db))
+       (map (fn [{:keys [table_schema table_name]}]
+              {:table (str table_schema "." table_name)}))))
+
 (defn get-primary-key-cols [db table-col]
   (let [[s t] (clojure.string/split table-col #"\.")]
     (->> (-> (h/select :key_column_usage.column_name)
