@@ -40,27 +40,29 @@
       (println "An error occurred:" (.getMessage e))
       -1)))
 
-(defn slurp-data [{db-file :db tables-file :tables test? :test :as req}]
-  (println "req" req)
+(defn slurp-data [{db-file :db tables-file :tables test? :test output-folder :output}]
   (try
     (let [{db :db} (-> db-file slurp yaml/parse-string)
           {:keys [tables root-table root-ids]} (-> tables-file slurp yaml/parse-string)
           deps (dep/build-deps-from-table-list db tables)
           table (apply u/vec-kw (str/split root-table #"\."))
           table-short (vec (take 2 table))
-          {result :data} (ing/slurp-data db
-                                         deps
-                                         (mdb/make-dag deps table-short)
-                                         (mdb/make-primary-keys deps)
-                                         {table root-ids}
-                                         (not test))]
+          slurped-data (ing/slurp-data db
+                                       deps
+                                       (mdb/make-dag deps table-short)
+                                       (mdb/make-primary-keys deps)
+                                       {table root-ids}
+                                       (not test?))]
+      (if test?
       ;; TODO use clojure.pprint/print-table instead
-      (doseq [[t c] (sort result)]
-        (println (u/make-table-str t) "-" c))
+        (doseq [[t c] (sort (:data slurped-data))]
+          (println (u/make-table-str t) "-" c))
+        (doseq [[t d] (:data slurped-data)]
+          ;; TODO actul path handling library
+          (spit (str output-folder "/" (u/make-table-str t) ".edn") d)))
       0)
     (catch Exception e
       (println "An error occurred:" (.getMessage e))
-      (println (.getStackTrace e))
       -1)))
 
 (def cli-config
@@ -95,9 +97,13 @@
                           :type :string
                           :default "tables.yaml"}
                          {:option "test"
+                          :short "t"
                           :type :with-flag
-                          :default false
-                          :short "t"}]
+                          :default false}
+                         {:option "output"
+                          :short "o"
+                          :type :string
+                          :default "slurped-data"}]
                   :runs slurp-data}]})
 
 (defn -main
