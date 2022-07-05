@@ -71,39 +71,43 @@
   (get-records-from-recursive-table u/yardstick-db
                                     {[:public :parent] {:parent_id [:public :parent :id]}}
                                     [8 9 10])
+
+
+
+  (def slurped-data (slurp-data u/yardstick-db deps dag primary-keys
+                                {[:public :school :id] [1]}
+                                false))
+
+
+  (def deps {[:public :school_assessment_instance] {:school_id [:public :school :id]},
+             [:public :student] {:school_id [:public :school :id]},
+             [:public :student_assessment]
+             {:student_id [:public :student :id], :school_assessment_instance_id [:public :school_assessment_instance :id]},
+             [:public :student_obstacle] {:student_id [:public :student :id]},
+             [:public :student_support] {:student_id [:public :student :id]},
+             [:public :student_opportunity] {:student_id [:public :student :id]},
+             [:public :assessment_star_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]},
+             [:public :assessment_map_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]}
+          ;;  [:public :parent] {:parent_id [:public :parent :id]}
+             })
+
+
+  (def dag [[:public :school]
+            [:public :school_assessment_instance]
+            [:public :student]
+            [:public :student_assessment]
+            [:public :student_obstacle]
+            [:public :student_support]
+            [:public :student_opportunity]
+            [:public :assessment_star_v1]
+            [:public :assessment_map_v1]
+          ;; [:public :parent]
+            ])
+
+  (def primary-keys {[:public :school] #{:id},
+                     [:public :student] #{:id},
+                     [:public :school_assessment_instance] #{:id}
+                  ;;  [:public :parent] #{:id}
+                     })
   ;
   )
-
-(def slurped-data (slurp-data u/yardstick-db deps dag primary-keys
-                              {[:public :school :id] [1]}
-                              false))
-
-(def deps {[:public :school_assessment_instance] {:school_id [:public :school :id]},
-           [:public :student] {:school_id [:public :school :id]},
-           [:public :student_assessment]
-           {:student_id [:public :student :id], :school_assessment_instance_id [:public :school_assessment_instance :id]},
-           [:public :student_obstacle] {:student_id [:public :student :id]},
-           [:public :student_support] {:student_id [:public :student :id]},
-           [:public :student_opportunity] {:student_id [:public :student :id]},
-           [:public :assessment_star_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]},
-           [:public :assessment_map_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]}
-          ;;  [:public :parent] {:parent_id [:public :parent :id]}
-           })
-
-(def dag [[:public :school]
-          [:public :school_assessment_instance]
-          [:public :student]
-          [:public :student_assessment]
-          [:public :student_obstacle]
-          [:public :student_support]
-          [:public :student_opportunity]
-          [:public :assessment_star_v1]
-          [:public :assessment_map_v1]
-          ;; [:public :parent]
-          ])
-
-(def primary-keys {[:public :school] #{:id},
-                   [:public :student] #{:id},
-                   [:public :school_assessment_instance] #{:id}
-                  ;;  [:public :parent] #{:id}
-                   })

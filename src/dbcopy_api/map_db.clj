@@ -19,11 +19,6 @@
    (fn [collected _] (into #{} collected))
    deps))
 
-(def deps-2
-  (-> deps
-      (update-in [[:public :school_assessment_instance]] assoc :support_id [:public :student_support :id])
-      (update-in [[:public :school_opportunity]] assoc :a [:b :c :d])))
-
 (defn make-dag [deps starting-table]
   (loop [[[t deps] & others] (make-deps-slim deps)
          resolved [starting-table]]
@@ -52,32 +47,40 @@
   (make-dag-2 deps [:public :school])
   (make-primary-keys deps)
   ;
-  )
+  (def deps-2
+    (-> deps
+        (update-in [[:public :school_assessment_instance]] assoc :support_id [:public :student_support :id])
+        (update-in [[:public :school_opportunity]] assoc :a [:b :c :d])))
 
-(def deps {[:public :school_assessment_instance] {:school_id [:public :school :id]},
-           [:public :student] {:school_id [:public :school :id]},
-           [:public :student_assessment]
-           {:student_id [:public :student :id], :school_assessment_instance_id [:public :school_assessment_instance :id]},
-           [:public :student_obstacle] {:student_id [:public :student :id]},
-           [:public :student_support] {:student_id [:public :student :id]},
-           [:public :student_opportunity] {:student_id [:public :student :id]},
-           [:public :assessment_star_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]},
-           [:public :assessment_map_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]}
-           [:public :parent] {:parent_id [:public :parent :id]
-                              :school_id [:public :school :id]}})
+
+
+  (def deps {[:public :school_assessment_instance] {:school_id [:public :school :id]},
+             [:public :student] {:school_id [:public :school :id]},
+             [:public :student_assessment]
+             {:student_id [:public :student :id], :school_assessment_instance_id [:public :school_assessment_instance :id]},
+             [:public :student_obstacle] {:student_id [:public :student :id]},
+             [:public :student_support] {:student_id [:public :student :id]},
+             [:public :student_opportunity] {:student_id [:public :student :id]},
+             [:public :assessment_star_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]},
+             [:public :assessment_map_v1] {:school_assessment_instance_id [:public :school_assessment_instance :id]}
+             [:public :parent] {:parent_id [:public :parent :id]
+                                :school_id [:public :school :id]}})
+
 
 ;; what is this?
-(map (fn [x]
-       {:table x
-        :type :normal})
-     [[:public :school]
-      [:public :school_assessment_instance]
-      [:public :parent]
-      [:public :parent]
-      [:public :assessment_star_v1]
-      [:public :student]
-      [:public :student_assessment]
-      [:public :assessment_map_v1]
-      [:public :student_obstacle]
-      [:public :student_opportunity]
-      [:public :student_support]])
+  (map (fn [x]
+         {:table x
+          :type :normal})
+       [[:public :school]
+        [:public :school_assessment_instance]
+        [:public :parent]
+        [:public :parent]
+        [:public :assessment_star_v1]
+        [:public :student]
+        [:public :student_assessment]
+        [:public :assessment_map_v1]
+        [:public :student_obstacle]
+        [:public :student_opportunity]
+        [:public :student_support]])
+  ;
+  )

@@ -3,8 +3,11 @@
 (defn vec-kw [& xs]
   (vec (map keyword xs)))
 
-(defn make-table-kw [[schema table]]
- (keyword (str (name schema) "." (name table))))
+(defn make-table-str [[schema table]]
+  (str (name schema) "." (name table)))
+
+(defn make-table-kw [t]
+  (keyword (make-table-str t)))
 
 (def yardstick-db {:dbtype "postgresql"
                    :dbname "yardstick"

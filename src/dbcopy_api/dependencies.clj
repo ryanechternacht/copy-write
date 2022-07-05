@@ -1,8 +1,9 @@
 (ns dbcopy-api.dependencies
-  (:require [dbcopy-api.db :as db]
-            [honey.sql.helpers :as h]
+  (:require [clojure.string :as str]
+            [com.rpl.specter :as s]
+            [dbcopy-api.db :as db]
             [dbcopy-api.utils :as u]
-            [com.rpl.specter :as s]))
+            [honey.sql.helpers :as h]))
 
 (def cols
   [;; {:from_schema "public",
@@ -193,25 +194,61 @@
   ;;   :to_column "id"}
    ])
 
-(defn get-referenced-cols [db]
-  (-> (h/select [:kcu1.table_schema :from_schema]
-                [:kcu1.table_name :from_table]
-                [:kcu1.column_name :from_column]
-                [:kcu2.table_schema :to_schema]
-                [:kcu2.table_name :to_table]
-                [:kcu2.column_name :to_column])
-      (h/from [:information_schema.referential_constraints :rc])
-      (h/join [:information_schema.key_column_usage :kcu1]
-              [:and
-               [:= :rc.constraint_catalog :kcu1.constraint_catalog]
-               [:= :rc.constraint_schema :kcu1.constraint_schema]
-               [:= :rc.constraint_name :kcu1.constraint_name]])
-      (h/join [:information_schema.key_column_usage :kcu2]
-              [:and
-               [:= :rc.unique_constraint_catalog :kcu2.constraint_catalog]
-               [:= :rc.unique_constraint_schema :kcu2.constraint_schema]
-               [:= :rc.unique_constraint_name :kcu2.constraint_name]])
-      (db/->execute db)))
+;; (defn get-referenced-cols [db]
+;;   (-> (h/select [:kcu1.table_schema :from_schema]
+;;                 [:kcu1.table_name :from_table]
+;;                 [:kcu1.column_name :from_column]
+;;                 [:kcu2.table_schema :to_schema]
+;;                 [:kcu2.table_name :to_table]
+;;                 [:kcu2.column_name :to_column])
+;;       (h/from [:information_schema.referential_constraints :rc])
+;;       (h/join [:information_schema.key_column_usage :kcu1]
+;;               [:and
+;;                [:= :rc.constraint_catalog :kcu1.constraint_catalog]
+;;                [:= :rc.constraint_schema :kcu1.constraint_schema]
+;;                [:= :rc.constraint_name :kcu1.constraint_name]])
+;;       (h/join [:information_schema.key_column_usage :kcu2]
+;;               [:and
+;;                [:= :rc.unique_constraint_catalog :kcu2.constraint_catalog]
+;;                [:= :rc.unique_constraint_schema :kcu2.constraint_schema]
+;;                [:= :rc.unique_constraint_name :kcu2.constraint_name]])
+;;       (db/->execute db)))
+
+(defn make-table-list-where [filter-tables]
+  (if (empty? filter-tables)
+    true
+    (let [tuples (map #(str/split % #"\.") filter-tables)]
+      [:and
+       [:in [:composite :kcu1.table_schema :kcu1.table_name] tuples]
+       [:in [:composite :kcu2.table_schema :kcu2.table_name] tuples]])))
+
+(db/->format
+ (h/where {}
+          (make-table-list-where
+           '("public.school" "public.support" "public.assessment_map_v1" "public.student_obstacle" "public.assessment_star_v1" "public.student_opportunity" "public.school_assessment_instance" "public.student_assessment" "public.student_support" "public.student"))))
+
+(defn get-referenced-cols
+  ([db] (get-referenced-cols db nil))
+  ([db filter-tables]
+   (-> (h/select [:kcu1.table_schema :from_schema]
+                 [:kcu1.table_name :from_table]
+                 [:kcu1.column_name :from_column]
+                 [:kcu2.table_schema :to_schema]
+                 [:kcu2.table_name :to_table]
+                 [:kcu2.column_name :to_column])
+       (h/from [:information_schema.referential_constraints :rc])
+       (h/join [:information_schema.key_column_usage :kcu1]
+               [:and
+                [:= :rc.constraint_catalog :kcu1.constraint_catalog]
+                [:= :rc.constraint_schema :kcu1.constraint_schema]
+                [:= :rc.constraint_name :kcu1.constraint_name]])
+       (h/join [:information_schema.key_column_usage :kcu2]
+               [:and
+                [:= :rc.unique_constraint_catalog :kcu2.constraint_catalog]
+                [:= :rc.unique_constraint_schema :kcu2.constraint_schema]
+                [:= :rc.unique_constraint_name :kcu2.constraint_name]])
+       (h/where (make-table-list-where filter-tables))
+       (db/->execute db))))
 
 (defn get-all-cols [db]
   (->> (-> (h/select :table_schema :table_name :column_name)
@@ -316,6 +353,10 @@
                     (u/vec-kw to_schema to_table to_column)))
           {}
           cols))
+
+(defn build-deps-from-table-list [db tables]
+  (->> (get-referenced-cols db tables)
+       (build-deps)))
 
 (defn deps->json [deps]
   (into [] (map (fn [[k v]]
