@@ -86,8 +86,6 @@
   (POST "/egest" [:as {{:keys [db deps slurped-data spat-rows root-table-row]} :in-mem-db body :body}]
     (let [{:keys [table ids]} @root-table-row
           table-kw (apply u/vec-kw (take 2 table))
-          ;; seed-values {table-kw (map (fn [{:keys [column value]}] {column value :id (first ids)}) body)}
-          ;; new-ids {(apply u/vec-kw table) {(first ids) 2}}]
           {:keys [seed-values new-ids]} (eg/insert-root-row @db
                                                             table
                                                             body
