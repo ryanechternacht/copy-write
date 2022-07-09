@@ -2,6 +2,7 @@
   (:require [cli-matic.core :as cli]
             [clojure.string :as str]
             [clj-yaml.core :as yaml]
+            [dbcopy-api.cli.add-db :as add-db]
             [dbcopy-api.db :as db]
             [dbcopy-api.dependencies :as dep]
             [dbcopy-api.egest :as eg]
@@ -111,59 +112,72 @@
 
 ;; TODO some global fn to flush *out*?
 ;; TODO -v to turn on stack traces
+;; (def cli-config
+;;   {:command "tenant-clone"
+;;    :description "A cli to use dbcopy to clone a tenant worth's of data"
+;;    :version "0.0.1"
+;;    :opts [{:option "db"
+;;            :type :string
+;;            :default "db.yaml"}]
+;;    :subcommands [{:command "test-db"
+;;                   :description "Validates a db connection works"
+;;                   :opts [{:option "db"
+;;                           :type :string
+;;                           :default "db.yaml"}]
+;;                   :runs test-db}
+;;                  {:command "list-tables"
+;;                   :description "List potential tables to sync"
+;;                   :opts [{:option "db"
+;;                           :type :string
+;;                           :default "db.yaml"}
+;;                          {:option "file"
+;;                           :short "f"
+;;                           :type :string
+;;                           :default "tables.yaml"}]
+;;                   :runs list-tables}
+;;                  {:command "slurp-data"
+;;                   :description "Slurp data as defined in the supplied yaml setup"
+;;                   :opts [{:option "db"
+;;                           :type :string
+;;                           :default "db.yaml"}
+;;                          {:option "tables"
+;;                           :type :string
+;;                           :default "tables.yaml"}
+;;                          {:option "test"
+;;                           :short "t"
+;;                           :type :with-flag
+;;                           :default false}
+;;                          {:option "output"
+;;                           :short "o"
+;;                           :type :string
+;;                           :default "slurped-data"}]
+;;                   :runs slurp-data}
+;;                  {:command "spit-data"
+;;                   :description "Spit stored data"
+;;                   :opts [{:option "db"
+;;                           :type :string
+;;                           :default "db.yaml"}
+;;                          {:option "slurped-data"
+;;                           :short "d"
+;;                           :type :string
+;;                           :default "slurped-data"}
+;;                          {:option "tables"
+;;                           :type :string
+;;                           :default "tables.yaml"}]
+;;                   :runs spit-data}]})
+
 (def cli-config
-  {:command "tenant-clone"
+  {:command "dbcopy"
    :description "A cli to use dbcopy to clone a tenant worth's of data"
    :version "0.0.1"
-   :opts [{:option "db"
-           :type :string
-           :default "db.yaml"}]
-   :subcommands [{:command "test-db"
-                  :description "Validates a db connection works"
-                  :opts [{:option "db"
-                          :type :string
-                          :default "db.yaml"}]
-                  :runs test-db}
-                 {:command "list-tables"
-                  :description "List potential tables to sync"
-                  :opts [{:option "db"
-                          :type :string
-                          :default "db.yaml"}
-                         {:option "file"
-                          :short "f"
-                          :type :string
-                          :default "tables.yaml"}]
-                  :runs list-tables}
-                 {:command "slurp-data"
-                  :description "Slurp data as defined in the supplied yaml setup"
-                  :opts [{:option "db"
-                          :type :string
-                          :default "db.yaml"}
-                         {:option "tables"
-                          :type :string
-                          :default "tables.yaml"}
-                         {:option "test"
-                          :short "t"
+   :opts []
+   :subcommands [{:command "add-db"
+                  :description "Adds a database. Use one of the flags to select which"
+                  :opts [{:option "postgres"
+                          :short "p"
                           :type :with-flag
-                          :default false}
-                         {:option "output"
-                          :short "o"
-                          :type :string
-                          :default "slurped-data"}]
-                  :runs slurp-data}
-                 {:command "spit-data"
-                  :description "Spit stored data"
-                  :opts [{:option "db"
-                          :type :string
-                          :default "db.yaml"}
-                         {:option "slurped-data"
-                          :short "d"
-                          :type :string
-                          :default "slurped-data"}
-                         {:option "tables"
-                          :type :string
-                          :default "tables.yaml"}]
-                  :runs spit-data}]})
+                          :default "false"}]
+                  :runs add-db/add-db}]})
 
 (defn -main
   "This is our entry point.
