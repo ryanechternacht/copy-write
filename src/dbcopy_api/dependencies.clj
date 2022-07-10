@@ -259,6 +259,7 @@
               {:table (str table_schema "." table_name)
                :column column_name}))))
 
+;; TODO does this need to return [{:table "xxx"}, ...] instead of just ["xxx", ...]
 (defn get-all-tables [db]
   (->> (-> (h/select :table_schema :table_name)
            (h/from :information_schema.tables)

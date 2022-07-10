@@ -26,10 +26,13 @@
                                                 :user user
                                                 :password password
                                                 :dbname dbname})))
-
+;; TODO name clashes? (maybe overwrite is fine? maybe that's a flag?)
 (defn add-db [{:keys [postgres]}]
   (cond
     postgres (add-postgres)
     :else (do
-            (println "Please choose a database. Use add-db -? for help")
+            (println "Please choose a database. Use \"add-db -?\" for help")
             (flush))))
+
+;; TODO we should confirm these work somewhere? 
+;; part of adding? afterwards? 
