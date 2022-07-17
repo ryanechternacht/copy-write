@@ -27,8 +27,9 @@
           :root-table {:db ""
                        :schema ""
                        :table ""}
-          :root-ids {:col ""
-                     :values ""}
+          ;; TODO handle multiple columns and multiple values
+          :root-id {:col ""
+                    :value ""}
           :tables tables
           :cross-db [{:db1 "" :schema1 "" :table1 "" :col1 ""
                       :db2 "" :schema2 "" :table2 "" :col2 ""}]}
