@@ -7,19 +7,9 @@
             [dbcopy-api.map-db :as mdb]
             [dbcopy-api.utils :as u]))
 
-;; TODO copy-paste
-(defn- read-files-from-folder
-  "Given a folder slurps and `read-strings` every file in it"
-  [folder]
-  (->> (io/file folder)
-       file-seq
-       (filter #(.isFile %))
-       (map slurp)
-       (map read-string)))
-
 (defn ingest-v01 [file test?]
   ;; TODO handle multiple dbs
-  (let [db (first (read-files-from-folder ".dbcopy/dbs"))
+  (let [db (first (u/read-files-from-folder ".dbcopy/dbs"))
         {:keys [tables root-table root-id]} (-> file slurp yaml/parse-string)
         ;; TODO pull the correct db here
         deps (deps/build-deps-from-table-list db (:yardstick tables))
@@ -34,31 +24,27 @@
     (if test?
       ;; TODO use clojure.pprint/print-table instead
       (doseq [[t c] (sort (:data ingested-data))]
+        (println "Testing ingest")
         (println (u/make-table-str t) "-" c))
-      (do
-        ;; TODO do we want this cacheing?
-        ;; (spit (str output-folder "/_deps.edn") deps)
-        ;; necessary because if we just grab the whole obj, we don't realize
+      (let [run-name (subs file 0 (str/last-index-of file ".yaml"))
+            folder (str ".dbcopy/ingested/" run-name "/")]
+        (println "Ingesting Data")
+        ;;  necessary because if we just grab the whole obj, we don't realize
         ;; the lazy-seqs that are tables and root-ids
-        ;; (spit (str output-folder "/_tables.edn") {:tables tables
-        ;;                                           :root-table root-table
-        ;;                                           :root-ids root-ids})
-        ;; (spit (str output-folder "/_slurped-data.edn") slurped-data)
-        (let [run-name (subs file 0 (str/last-index-of file ".yaml"))
-              folder (str ".dbcopy/ingested/" run-name "/")]
-          (io/make-parents (str folder "temp-file"))
-          (doseq [[t d] (:data ingested-data)]
+        ;; TODO do we want this cacheing?
+        (io/make-parents (str folder "temp-file"))
+        (spit (str folder "_deps.edn") deps)
+        (spit (str folder "_setup.edn") {:tables tables
+                                         :root-table root-table
+                                         :root-id root-id})
+        ;; TODO don't require this
+        (spit (str folder "_slurped-data.edn") ingested-data)
+        (doseq [[t d] (:data ingested-data)]
           ;; TODO actual path handling library
-            (spit (str folder (u/make-table-str t) ".edn") d)
-            (println (u/make-table-str t) "-" (count d))))))))
-
-;; (str/last-index-of "boo.yaml" ".yaml")
+          (spit (str folder (u/make-table-str t) ".edn") d)
+          (println (u/make-table-str t) "-" (count d)))))))
 
 (defn ingest [{:keys [file test]}]
   (let [{:keys [version]} (-> file slurp yaml/parse-string)]
     (condp = version
       "v0.1" (ingest-v01 file test))))
-
-;; (spit ".dbcopy/new-folder/hello" "hello world")
-
-;; (io/make-parents ".dbcopy/a/b/c")

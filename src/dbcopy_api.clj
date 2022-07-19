@@ -5,6 +5,7 @@
             [dbcopy-api.cli.add-db :as cli-add-db]
             [dbcopy-api.cli.generate-template :as cli-gen-t]
             [dbcopy-api.cli.ingest :as cli-ing]
+            [dbcopy-api.cli.egest :as cli-eg]
             [dbcopy-api.db :as db]
             [dbcopy-api.egest :as eg]
             [dbcopy-api.map-db :as mdb]
@@ -27,39 +28,6 @@
       (println "Found an issue:" (.getMessage e))
       -1)))
 
-(defn spit-data [{db-file :db  slurped-data-folder :slurped-data}]
-  (try
-    (let [{db :db} (-> db-file slurp yaml/parse-string)
-          {:keys [root-table root-ids]}
-          (-> (str slurped-data-folder "/_tables.edn") slurp read-string)
-          deps (-> (str slurped-data-folder "/_deps.edn") slurp read-string)
-          slurped-data (-> (str slurped-data-folder "/_slurped-data.edn") slurp read-string)
-          table (apply u/vec-kw (str/split root-table #"\."))
-          table-kw (vec (take 2 table))
-          ;; TODO where does this come from?
-          body [{:column "name" :value "Ridge View Elementary"}]
-          {:keys [seed-values new-ids]} (eg/insert-root-row db
-                                                            table
-                                                            body
-                                                            (first root-ids))
-          outcome (eg/insert-rows db
-                                  deps
-                                  (mdb/make-dag deps table-kw)
-                                  (mdb/make-primary-keys deps)
-                                  slurped-data
-                                  {table-kw seed-values}
-                                  new-ids)]
-      ;; TODO spit 1 table at a time
-      (println "Generated new data.")
-      (printf "Table: %s -- id: %s\n" (u/make-table-str table) (->> new-ids first second first second))
-      (printf "Wrote %d new records across %d tables\n" (->> outcome (map second) (map count) (reduce +)) (count outcome))
-      (flush)
-      0)
-    (catch Exception e
-      (println "An error occurred:" (.getMessage e))
-      -1)))
-
-
 ;; TODO I forget how to write macros
 (defmacro handle-errors [f {:keys [verbose] :as cli-opts}]
   ~(fn [cli-opts]
@@ -78,6 +46,11 @@
                    :short "v"
                    :type :with-flag
                    :default false}])
+
+;; copy cat
+;; kopy kat
+;; george cloney
+;; copy write
 
 (def cli-config
   {:command "dbcopy"
@@ -112,7 +85,21 @@
                                :short "t"
                                :type :with-flag
                                :default false})
-                  :runs cli-ing/ingest}]})
+                  :runs cli-ing/ingest}
+                 {:command "egest"
+                  :description "Creates a copy of a dataset that was pulled before"
+                  :opts (conj shared-opts
+                              {:option "dataset"
+                               :short "d"
+                               :type :string
+                               :description "The name of the file template file (with or without '.yaml')"
+                               :default "template"}
+                              {:option "result"
+                               :short "r"
+                               :type :string
+                               :description "File outling the results of the run"
+                               :default "result.yaml"})
+                  :runs cli-eg/egest}]})
 
 (defn -main
   "This is our entry point.
