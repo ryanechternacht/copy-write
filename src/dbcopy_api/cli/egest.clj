@@ -38,6 +38,4 @@
                                                  :value (first new-ids)}}))
     (printf "Table: %s -- id: %s\n" (u/make-table-str table) (->> new-ids first second first second))
     (printf "Wrote %d new records across %d tables\n" (->> outcome (map second) (map count) (reduce +)) (count outcome))
-    (printf "See `%s` for more details" result)
-    ;; TODO remove this flush
-    (flush)))
+    (printf "See `%s` for more details\n" result)))

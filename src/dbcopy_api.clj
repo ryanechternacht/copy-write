@@ -14,32 +14,33 @@
 
 ;; clj -M -m dbcopy-api test-db --db=db.yaml
 
-(defn test-db [{:keys [db]}]
-  (try
-    (let [{db-val :db} (-> db slurp yaml/parse-string)
-          #_{:clj-kondo/ignore [:unused-binding]}
-          trial-select (-> (h/select :*)
-                           (h/from :information_schema.columns)
-                           (h/limit 1)
-                           (db/->execute db-val))]
-      (println "Everything looks good")
-      0)
-    (catch Exception e
-      (println "Found an issue:" (.getMessage e))
-      -1)))
+;; (defn test-db [{:keys [db]}]
+;;   (try
+;;     (let [{db-val :db} (-> db slurp yaml/parse-string)
+;;           #_{:clj-kondo/ignore [:unused-binding]}
+;;           trial-select (-> (h/select :*)
+;;                            (h/from :information_schema.columns)
+;;                            (h/limit 1)
+;;                            (db/->execute db-val))]
+;;       (println "Everything looks good")
+;;       0)
+;;     (catch Exception e
+;;       (println "Found an issue:" (.getMessage e))
+;;       -1)))
 
-;; TODO I forget how to write macros
-(defmacro handle-errors [f {:keys [verbose] :as cli-opts}]
-  ~(fn [cli-opts]
+(defmacro with-harness [f]
+  `(fn [cli-opts#]
+  ;; `(fn [{:keys [verbose] :as cli-opts}]
      (try
-       (f cli-opts)
-       (flush)
+       (~f cli-opts#)
        0 ;; successful return code
-       (catch Exception e
-         (println "An error occurred:" (.getMessage e))
-         (when verbose
-           (.printStackTrace e))
-         -1))))
+       (catch Exception e#
+         (println "An error occured:" (.getMessage e#))
+         (when (:verbose cli-opts#)
+           (.printStackTrace e#))
+         -1 ;; failed status code
+         )
+       (finally (flush)))))
 
 ;; TODO can the global flags be used anywhere? (and not require this)
 (def shared-opts [{:option "verbose"
@@ -64,7 +65,7 @@
                                :short "p"
                                :type :with-flag
                                :default false})
-                  :runs cli-add-db/add-db}
+                  :runs (with-harness cli-add-db/add-db)}
                  {:command "gen-template"
                   :description "Generates a template for a new pull from the dbs added"
                   ;; TODO add the ability to filter dbs now?
@@ -73,7 +74,7 @@
                                :short "f"
                                :type :string
                                :default "template.yaml"})
-                  :runs cli-gen-t/generate-template}
+                  :runs (with-harness cli-gen-t/generate-template)}
                  {:command "ingest"
                   :description "Ingests the data outlined by a template yaml file"
                   :opts (conj shared-opts
@@ -85,7 +86,7 @@
                                :short "t"
                                :type :with-flag
                                :default false})
-                  :runs cli-ing/ingest}
+                  :runs (with-harness cli-ing/ingest)}
                  {:command "egest"
                   :description "Creates a copy of a dataset that was pulled before"
                   :opts (conj shared-opts
@@ -99,7 +100,7 @@
                                :type :string
                                :description "File outling the results of the run"
                                :default "result.yaml"})
-                  :runs cli-eg/egest}]})
+                  :runs (with-harness cli-eg/egest)}]})
 
 (defn -main
   "This is our entry point.
