@@ -15,8 +15,6 @@
         {:keys [root-table root-id]}
         (-> (str folder "_setup.edn") slurp read-string)
         deps (-> (str folder "_deps.edn") slurp read-string)
-        ;; TODO be able to spit one file at a time
-        slurped-data (-> (str folder "_slurped-data.edn") slurp read-string)
         table (u/vec-kw (:schema root-table) (:table root-table) (:col root-id))
         table-short (u/vec-kw (:schema root-table) (:table root-table))
         ;; TODO where does this come from?
@@ -29,10 +27,11 @@
                                 deps
                                 (mdb/make-dag deps table-short)
                                 (mdb/make-primary-keys deps)
-                                slurped-data
+                                folder
                                 {table-short seed-values}
                                 new-ids)]
     (println "Generated new data.")
+    ;; TODO reformat this file a bit so the new id is easier to grab
     (spit result (yaml/generate-string {:root-table root-table
                                         :new-id {:col (:col root-id)
                                                  :value (first new-ids)}}))

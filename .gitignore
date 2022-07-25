@@ -15,3 +15,5 @@
 .hg/
 .clj-kondo/
 .lsp/
+
+.dbcopy

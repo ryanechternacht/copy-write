@@ -37,6 +37,7 @@
         (spit (str folder "_setup.edn") {:tables tables
                                          :root-table root-table
                                          :root-id root-id})
+        (spit (str folder "_ids.edn") (:ids ingested-data))
         ;; TODO don't require this
         (spit (str folder "_slurped-data.edn") ingested-data)
         (doseq [[t d] (:data ingested-data)]

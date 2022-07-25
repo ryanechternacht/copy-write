@@ -4,7 +4,8 @@
             [dbcopy-api.utils :as u]
             [com.rpl.specter :as s]
             [clojure.set :as set]
-            [dbcopy-api.ingest :as ing]))
+            [dbcopy-api.ingest :as ing]
+            [clojure.string :as str]))
 
 ;; I should be able to pull the :id from cols or something
 (defn- drop-keys [rec]
@@ -52,13 +53,49 @@
     {:seed-values {[s t] new-row}
      :new-ids {[s t c] {original-id (first (map c new-row))}}}))
 
-(defn insert-rows [db deps dag primary-keys {:keys [ids data]} seed-data new-ids]
+;; (defn insert-rows [db deps dag primary-keys {:keys [ids data]} seed-data new-ids]
+;;   (loop [[t & others] (rest dag)
+;;          new-ids new-ids
+;;          spat-data seed-data]
+;;     (if (nil? t)
+;;       spat-data
+;;       (let [new-insert-sql (build-insert deps data t new-ids)]
+;;         (if (nil? new-insert-sql)
+;;           (recur others new-ids spat-data)
+;;           (let [new-rows (db/execute db new-insert-sql)
+;;                ;; TODO hanlde multiple ids
+;;                 col (first (primary-keys t))]
+;;             (recur others
+;;                    (if col
+;;                      (let [full-col (conj t col)
+;;                            mapped-ids (zipmap (ids full-col) (map col new-rows))
+;;                            new-ids (assoc new-ids full-col mapped-ids)]
+;;                        new-ids)
+;;                      new-ids)
+;;                    (assoc spat-data t new-rows))))))))
+
+;; the above, but use a folder of files instead of a giant map
+;; with all the data pre-loaded
+(defn insert-rows [db
+                   deps
+                   dag
+                   primary-keys
+                   folder
+                   seed-data
+                   new-ids]
   (loop [[t & others] (rest dag)
          new-ids new-ids
          spat-data seed-data]
     (if (nil? t)
       spat-data
-      (let [new-insert-sql (build-insert deps data t new-ids)]
+      (let [table-string (->> t (map name) (str/join "."))
+            file-data (-> (str folder table-string ".edn") slurp read-string)
+            ;; the above 3 lines are to build `data` which is just a small
+            ;; version of the big slurped-data map. this version of 
+            ;; `data` has just the data for the current table
+            data {t file-data}
+            ids (-> (str folder "_ids.edn") slurp read-string)
+            new-insert-sql (build-insert deps data t new-ids)]
         (if (nil? new-insert-sql)
           (recur others new-ids spat-data)
           (let [new-rows (db/execute db new-insert-sql)
