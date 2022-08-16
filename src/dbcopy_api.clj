@@ -1,32 +1,11 @@
 (ns dbcopy-api
   (:require [cli-matic.core :as cli]
-            [clojure.string :as str]
-            [clj-yaml.core :as yaml]
             [dbcopy-api.cli.add-db :as cli-add-db]
             [dbcopy-api.cli.generate-template :as cli-gen-t]
             [dbcopy-api.cli.ingest :as cli-ing]
-            [dbcopy-api.cli.egest :as cli-eg]
-            [dbcopy-api.db :as db]
-            [dbcopy-api.egest :as eg]
-            [dbcopy-api.map-db :as mdb]
-            [dbcopy-api.utils :as u]
-            [honey.sql.helpers :as h]))
+            [dbcopy-api.cli.egest :as cli-eg]))
 
 ;; clj -M -m dbcopy-api test-db --db=db.yaml
-
-;; (defn test-db [{:keys [db]}]
-;;   (try
-;;     (let [{db-val :db} (-> db slurp yaml/parse-string)
-;;           #_{:clj-kondo/ignore [:unused-binding]}
-;;           trial-select (-> (h/select :*)
-;;                            (h/from :information_schema.columns)
-;;                            (h/limit 1)
-;;                            (db/->execute db-val))]
-;;       (println "Everything looks good")
-;;       0)
-;;     (catch Exception e
-;;       (println "Found an issue:" (.getMessage e))
-;;       -1)))
 
 (defmacro with-harness [f]
   `(fn [cli-opts#]
