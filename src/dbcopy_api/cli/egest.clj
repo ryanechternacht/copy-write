@@ -2,7 +2,6 @@
   (:require [clojure.string :as str]
             [clj-yaml.core :as yaml]
             [dbcopy-api.egest :as eg]
-            [dbcopy-api.dependencies :as deps]
             [dbcopy-api.map-db :as mdb]
             [dbcopy-api.utils :as u]))
 

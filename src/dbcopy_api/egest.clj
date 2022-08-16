@@ -2,8 +2,6 @@
   (:require [dbcopy-api.db :as db]
             [honey.sql.helpers :as h]
             [dbcopy-api.utils :as u]
-            [com.rpl.specter :as s]
-            [clojure.set :as set]
             [dbcopy-api.ingest :as ing]
             [clojure.string :as str]))
 
@@ -53,27 +51,6 @@
     {:seed-values {[s t] new-row}
      :new-ids {[s t c] {original-id (first (map c new-row))}}}))
 
-;; (defn insert-rows [db deps dag primary-keys {:keys [ids data]} seed-data new-ids]
-;;   (loop [[t & others] (rest dag)
-;;          new-ids new-ids
-;;          spat-data seed-data]
-;;     (if (nil? t)
-;;       spat-data
-;;       (let [new-insert-sql (build-insert deps data t new-ids)]
-;;         (if (nil? new-insert-sql)
-;;           (recur others new-ids spat-data)
-;;           (let [new-rows (db/execute db new-insert-sql)
-;;                ;; TODO hanlde multiple ids
-;;                 col (first (primary-keys t))]
-;;             (recur others
-;;                    (if col
-;;                      (let [full-col (conj t col)
-;;                            mapped-ids (zipmap (ids full-col) (map col new-rows))
-;;                            new-ids (assoc new-ids full-col mapped-ids)]
-;;                        new-ids)
-;;                      new-ids)
-;;                    (assoc spat-data t new-rows))))))))
-
 ;; the above, but use a folder of files instead of a giant map
 ;; with all the data pre-loaded
 (defn insert-rows [db
@@ -115,6 +92,7 @@
                ing/deps
                ing/dag
                ing/primary-keys
+               "folder?"
                ing/slurped-data
                {[:public :school] [{:id 2
                                     :name "Ridge View Elementary"}]})

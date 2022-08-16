@@ -1,17 +1,6 @@
 (ns dbcopy-api.map-db
   (:require [com.rpl.specter :as s]))
 
-;; all this needs to do is map k to the set of value's value's 
-;; and remove the 3rd element of each value's values
-;; (defn make-deps-slim [deps]
-;;   (into {}
-;;         (map (fn [[k vs]]
-;;                [k (into #{} (map (fn [[_ vs2]] (->> vs2
-;;                                                      (take 2)
-;;                                                      vec))
-;;                                  vs))])
-;;              deps)))
-
 ;; specter implementation of the above
 (defn make-deps-slim [deps]
   (s/transform
