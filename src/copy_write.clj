@@ -1,15 +1,14 @@
-(ns dbcopy-api
+(ns copy-write
   (:require [cli-matic.core :as cli]
-            [dbcopy-api.cli.add-db :as cli-add-db]
-            [dbcopy-api.cli.generate-template :as cli-gen-t]
-            [dbcopy-api.cli.ingest :as cli-ing]
-            [dbcopy-api.cli.egest :as cli-eg]))
+            [copy-write.cli.add-db :as cli-add-db]
+            [copy-write.cli.generate-template :as cli-gen-t]
+            [copy-write.cli.ingest :as cli-ing]
+            [copy-write.cli.egest :as cli-eg]))
 
-;; clj -M -m dbcopy-api test-db --db=db.yaml
+;; clj -M -m copy-write test-db --db=db.yaml
 
 (defmacro with-harness [f]
   `(fn [cli-opts#]
-  ;; `(fn [{:keys [verbose] :as cli-opts}]
      (try
        (~f cli-opts#)
        0 ;; successful return code
@@ -27,14 +26,9 @@
                    :type :with-flag
                    :default false}])
 
-;; copy cat
-;; kopy kat
-;; george cloney
-;; copy write
-
 (def cli-config
-  {:command "dbcopy"
-   :description "A cli to use dbcopy to clone a tenant worth's of data"
+  {:command "copy-write"
+   :description "A cli to use copy-write to clone a tenant worth's of data"
    :version "0.0.1"
    :opts shared-opts
    :subcommands [{:command "add-db"

@@ -1,8 +1,8 @@
-(ns dbcopy-api.egest
-  (:require [dbcopy-api.db :as db]
+(ns copy-write.egest
+  (:require [copy-write.db :as db]
             [honey.sql.helpers :as h]
-            [dbcopy-api.utils :as u]
-            [dbcopy-api.ingest :as ing]
+            [copy-write.utils :as u]
+            [copy-write.ingest :as ing]
             [clojure.string :as str]))
 
 ;; I should be able to pull the :id from cols or something
@@ -88,7 +88,7 @@
                    (assoc spat-data t new-rows))))))))
 
 (comment
-  (insert-rows u/yardstick-db
+  (insert-rows u/test-db
                ing/deps
                ing/dag
                ing/primary-keys

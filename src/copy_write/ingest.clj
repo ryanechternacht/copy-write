@@ -1,7 +1,7 @@
-(ns dbcopy-api.ingest
-  (:require [dbcopy-api.db :as db]
+(ns copy-write.ingest
+  (:require [copy-write.db :as db]
             [honey.sql.helpers :as h]
-            [dbcopy-api.utils :as u]
+            [copy-write.utils :as u]
             [clojure.set :as set]))
 
 (defn slurp-rows [db t where-clauses]
@@ -65,16 +65,16 @@
 
 (comment
   (u/make-table-kw [:public :student])
-  (slurp-rows u/yardstick-db [:public :student] [[:= :id 1]])
-  (slurp-data u/yardstick-db deps dag primary-keys
+  (slurp-rows u/test-db [:public :student] [[:= :id 1]])
+  (slurp-data u/test-db deps dag primary-keys
               {[:public :school :id] [1]} false)
-  (get-records-from-recursive-table u/yardstick-db
+  (get-records-from-recursive-table u/test-db
                                     {[:public :parent] {:parent_id [:public :parent :id]}}
                                     [8 9 10])
 
 
 
-  (def slurped-data (slurp-data u/yardstick-db deps dag primary-keys
+  (def slurped-data (slurp-data u/test-db deps dag primary-keys
                                 {[:public :school :id] [1]}
                                 false))
 

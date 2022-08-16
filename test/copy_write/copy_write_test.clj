@@ -1,6 +1,6 @@
-(ns dbcopy.dbcopy-api-test
+(ns copy-write.copy-write-test
   (:require [clojure.test :refer :all]
-            [dbcopy-api :refer :all]))
+            [copy-write :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

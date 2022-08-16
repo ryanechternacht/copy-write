@@ -1,4 +1,4 @@
-(ns dbcopy-api.db
+(ns copy-write.db
   (:require [cheshire.core :as json]
             [honey.sql :as sql]
             [next.jdbc :as jdbc]

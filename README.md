@@ -1,10 +1,10 @@
-# dbcopy-api
+# copy-write
 
 FIXME: my new application.
 
 ## Installation
 
-Download from https://github.com/dbcopy/dbcopy-api
+Download from https://github.com/copy-write/copy-write
 
 ## Usage
 
@@ -20,7 +20,7 @@ Run the project, overriding the name to be greeted:
     $ clojure -X:run-x :name '"Someone"'
     Hello, Someone!
 
-Run the project directly, via `:main-opts` (`-m dbcopy.dbcopy-api`):
+Run the project directly, via `:main-opts` (`-m copy-write.copy-write`):
 
     $ clojure -M:run-m
     Hello, World!
@@ -49,7 +49,7 @@ also need to remove `:sync-pom true` from the `deps.edn` file (in the `:exec-arg
 
 Run that uberjar:
 
-    $ java -jar dbcopy-api.jar
+    $ java -jar copy-write.jar
 
 ## Options
 

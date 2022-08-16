@@ -1,4 +1,4 @@
-(ns dbcopy-api.map-db
+(ns copy-write.map-db
   (:require [com.rpl.specter :as s]))
 
 ;; specter implementation of the above

@@ -1,16 +1,16 @@
-(ns dbcopy-api.cli.egest
+(ns copy-write.cli.egest
   (:require [clojure.string :as str]
             [clj-yaml.core :as yaml]
-            [dbcopy-api.egest :as eg]
-            [dbcopy-api.map-db :as mdb]
-            [dbcopy-api.utils :as u]))
+            [copy-write.egest :as eg]
+            [copy-write.map-db :as mdb]
+            [copy-write.utils :as u]))
 
 (defn egest [{:keys [dataset result]}]
   ;; TODO handle multiple dbs
-  (let [db (first (u/read-files-from-folder ".dbcopy/dbs"))
+  (let [db (first (u/read-files-from-folder ".copy-write/dbs"))
         yaml-loc (str/last-index-of dataset ".yaml")
         dataset-name (if yaml-loc (subs dataset 0 yaml-loc) dataset)
-        folder (str ".dbcopy/ingested/" dataset-name "/")
+        folder (str ".copy-write/ingested/" dataset-name "/")
         {:keys [root-table root-id]}
         (-> (str folder "_setup.edn") slurp read-string)
         deps (-> (str folder "_deps.edn") slurp read-string)

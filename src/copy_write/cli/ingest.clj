@@ -1,15 +1,15 @@
-(ns dbcopy-api.cli.ingest
+(ns copy-write.cli.ingest
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clj-yaml.core :as yaml]
-            [dbcopy-api.ingest :as ing]
-            [dbcopy-api.dependencies :as deps]
-            [dbcopy-api.map-db :as mdb]
-            [dbcopy-api.utils :as u]))
+            [copy-write.ingest :as ing]
+            [copy-write.dependencies :as deps]
+            [copy-write.map-db :as mdb]
+            [copy-write.utils :as u]))
 
 (defn ingest-v01 [file test?]
   ;; TODO handle multiple dbs
-  (let [db (first (u/read-files-from-folder ".dbcopy/dbs"))
+  (let [db (first (u/read-files-from-folder ".copy-write/dbs"))
         {:keys [tables root-table root-id]} (-> file slurp yaml/parse-string)
         ;; TODO pull the correct db here
         deps (deps/build-deps-from-table-list db (:yardstick tables))
@@ -27,7 +27,7 @@
         (println "Testing ingest")
         (println (u/make-table-str t) "-" c))
       (let [run-name (subs file 0 (str/last-index-of file ".yaml"))
-            folder (str ".dbcopy/ingested/" run-name "/")]
+            folder (str ".copy-write/ingested/" run-name "/")]
         (println "Ingesting Data")
         ;;  necessary because if we just grab the whole obj, we don't realize
         ;; the lazy-seqs that are tables and root-ids

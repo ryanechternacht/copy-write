@@ -1,0 +1,1 @@
+{:dbtype "postgresql", :nickname "ys", :host "127.0.0.1", :user "ryan", :password "", :dbname "yardstick"}

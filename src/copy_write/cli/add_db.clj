@@ -1,4 +1,4 @@
-(ns dbcopy-api.cli.add-db
+(ns copy-write.cli.add-db
   (:require [clojure.string :as str]))
 
 (defn- get-input
@@ -20,12 +20,12 @@
         user (get-input "User" {:required true})
         password (get-input "Password")
         dbname (get-input "Db Name" {:required true})]
-    (spit (str ".dbcopy/dbs/" nickname ".edn") {:dbtype "postgresql"
-                                                :nickname nickname
-                                                :host host
-                                                :user user
-                                                :password password
-                                                :dbname dbname})))
+    (spit (str ".copy-write/dbs/" nickname ".edn") {:dbtype "postgresql"
+                                                    :nickname nickname
+                                                    :host host
+                                                    :user user
+                                                    :password password
+                                                    :dbname dbname})))
 ;; TODO name clashes? (maybe overwrite is fine? maybe that's a flag?)
 (defn add-db [{:keys [postgres]}]
   (cond

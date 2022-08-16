@@ -1,8 +1,8 @@
-(ns dbcopy-api.dependencies
+(ns copy-write.dependencies
   (:require [clojure.string :as str]
             [com.rpl.specter :as s]
-            [dbcopy-api.db :as db]
-            [dbcopy-api.utils :as u]
+            [copy-write.db :as db]
+            [copy-write.utils :as u]
             [honey.sql.helpers :as h]))
 
 (defn make-table-list-where [filter-tables]
@@ -166,10 +166,10 @@
         json-table->kw)))
 
 (comment
-  (get-all-cols u/yardstick-db)
-  (get-referenced-cols u/yardstick-db)
-  (get-primary-key-cols u/yardstick-db "public.student")
-  (get-table-columns u/yardstick-db "public.grade")
+  (get-all-cols u/test-db)
+  (get-referenced-cols u/test-db)
+  (get-primary-key-cols u/test-db "public.student")
+  (get-table-columns u/test-db "public.grade")
   (build-deps cols)
   (deps->json {[:public :school_assessment_instance] {:school_id [:public :school :id]}})
   ;

@@ -1,12 +1,12 @@
-(ns dbcopy-api.utils
+(ns copy-write.utils
   (:require [clojure.java.io :as io]))
 
-(def yardstick-db {:dbtype "postgresql"
-                   :dbname "yardstick"
-                   :host "127.0.0.1"
-                   :user "ryan"
-                   :password nil
-                   :ssl false})
+(def test-db {:dbtype "postgresql"
+              :dbname "yardstick"
+              :host "127.0.0.1"
+              :user "ryan"
+              :password nil
+              :ssl false})
 
 (defn vec-kw [& xs]
   (vec (map keyword xs)))
